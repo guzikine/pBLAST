@@ -1,5 +1,6 @@
 import pBlast
 
+# Parameters required for pBLAST sensitivity.
 kmerLength = 3
 thresholdValue = 13
 gapScore = -10

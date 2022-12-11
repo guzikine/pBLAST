@@ -25,7 +25,7 @@ try:
     fQuery = open("query.fasta")
 
     # Opening FASTA protein databse file for reading.
-    fDatabase = open("proteinDatabaseSmaller.fasta")
+    fDatabase = open("proteinDatabase.fasta")
 
     # Reading each file and storing it in a variable.
     scoringMatrixFile = fMatrix.read()
@@ -35,11 +35,10 @@ except Exception as e:
     print(e)
     print("Something went wrong when opening the file to read.")
 finally:
-    #Closing each file after reading was done.
+    # Closing each file after reading was done.
     fMatrix.close()
     fQuery.close()
     fDatabase.close()
-
 
 def runpBlast(kmerLength = 3, thresholdValue = 13, gapScore = -10):
     extensionThreshold = thresholdValue + 1
