@@ -10,32 +10,27 @@
 # kmerLength = 3;
 # W - kmer length.
 # booleanIndexing is set to True if k-mer indexes are required.
-def kmerGeneration(FASTAstringSequence, booleanIndexing = False, kmerLength = 3):
-    kmerArray = []
-    kmerDictionary = {}
+def databaseKmerGeneration(proteinDatabaseString, kmerLength):
+    databaseKmerDictionary = {}
 
-    for i in range(0, len(FASTAstringSequence)-2):
+    for i in range(0, len(proteinDatabaseString) - 2):
         # This part is used for kmer list generation
         # without indexes.
-        kmer = FASTAstringSequence[i:kmerLength + i]
-        kmerArray.append(kmer)
+        kmer = proteinDatabaseString[i:kmerLength + i]
 
         # This part is used for dictionary generation
         # with indexes.
-        if kmer in kmerDictionary:
-            kmerDictionary[kmer]['index'].append(i + 1)
+        if kmer in databaseKmerDictionary:
+            databaseKmerDictionary[kmer]['index'].append(i + 1)
         else:
-            kmerDictionary[kmer] = {'index': [i+1]}
+            databaseKmerDictionary[kmer] = {'index': [i+1]}
 
-    if booleanIndexing:
-        return kmerArray, kmerDictionary
-    else:
-        return kmerArray
+    return databaseKmerDictionary
 
 # This function is used to generate high scoring sequence pairs (HSSPs).
 # It is done by comparing query k-mers to the database k-mers and calculating
 # the threshold value. If it is below the specified or default it is ignored.
-def generatingHSSP(scoringMatrix, databaseKmerDictionary, queryFASTAString, kmerLength = 3, thresholdValue = 13):
+def generatingHSSP(scoringMatrix, databaseKmerDictionary, queryFASTAString, kmerLength, thresholdValue):
     HSSPdictionary = {}
 
     for i in range(0, len(queryFASTAString)-2):
@@ -87,7 +82,7 @@ def getMatrixFragment(scoreBoard, coordinateArray):
 # Then a regular Smith-Waterman algorithm is run for the 2x2 matrix.
 # The result is outputed as a dictionary, where score, direction for determining
 # local alignment, database and query aminoacids are stored.
-def smithWaterman(matrixFragment, scoringMatrix, gapScore, aminoAcidArray):
+def smithWatermanAlgorithm(matrixFragment, scoringMatrix, gapScore, aminoAcidArray):
 
     vertical = matrixFragment[0][1]['score'] + gapScore
     horizontal = matrixFragment[1][0]['score'] + gapScore
@@ -106,17 +101,17 @@ def smithWaterman(matrixFragment, scoringMatrix, gapScore, aminoAcidArray):
 
 # This is the function for processing every data in this program and outputing the final
 # dictionary with the results.
-def searchAlgorithm(databaseEndIndices, kmerDictionary, databaseDictionary, scoringMatrix, database, query, extensionThreshold = 14, gapScore = -10, kmerLength = 3):
+def searchDatabaseAlgorithm(proteinDatabaseEndIndices, HSSPdictionary, proteinDatabaseDictionary, scoringMatrix, proteinDatabaseString, proteinQueryString, extensionThreshold = 14, gapScore = -10, kmerLength = 3):
 
     resultDictionary = {}
     dictionaryIndex = 0
 
-    for kmer in kmerDictionary:
-        for dataIndex in kmerDictionary[kmer]['databaseIndex']:
+    for kmer in HSSPdictionary:
+        for dataIndex in HSSPdictionary[kmer]['databaseIndex']:
             databaseStartIndex = dataIndex
             databaseEndIndex = 0
 
-            for endIndex in databaseEndIndices:
+            for endIndex in proteinDatabaseEndIndices:
                 if endIndex == databaseStartIndex:
                     continue
                 elif endIndex < databaseStartIndex:
@@ -129,13 +124,13 @@ def searchAlgorithm(databaseEndIndices, kmerDictionary, databaseDictionary, scor
                 continue
 
             currentSequenceHeader = ''
-            for header in databaseDictionary:
-                if databaseDictionary[header]['end'] == databaseEndIndex:
+            for header in proteinDatabaseDictionary:
+                if proteinDatabaseDictionary[header]['end'] == databaseEndIndex:
                     currentSequenceHeader = header
                     break
 
-            trueDatabase = database[dataIndex:databaseEndIndex]
-            trueQuery = query[kmerDictionary[kmer]['queryIndex']:]
+            trueDatabase = proteinDatabaseString[dataIndex:databaseEndIndex]
+            trueQuery = proteinQueryString[HSSPdictionary[kmer]['queryIndex']:]
             queryLength = len(trueQuery)
             databaseLength = len(trueDatabase)
             scoreBoard = scoreBoardInitialization(databaseLength, queryLength)
@@ -153,8 +148,8 @@ def searchAlgorithm(databaseEndIndices, kmerDictionary, databaseDictionary, scor
                 for element in coordinateArray:
                     a = getMatrixFragment(scoreBoard, [element, lastElement])
                     b = getMatrixFragment(scoreBoard, [lastElement, element])
-                    aScore = smithWaterman(a, scoringMatrix, gapScore, [trueDatabase[element-1], trueQuery[lastElement-1]])
-                    bScore = smithWaterman(b, scoringMatrix, gapScore, [trueDatabase[lastElement-1], trueQuery[element-1]])
+                    aScore = smithWatermanAlgorithm(a, scoringMatrix, gapScore, [trueDatabase[element - 1], trueQuery[lastElement - 1]])
+                    bScore = smithWatermanAlgorithm(b, scoringMatrix, gapScore, [trueDatabase[lastElement - 1], trueQuery[element - 1]])
                     scoreBoard[element][lastElement] = aScore
                     scoreBoard[lastElement][element] = bScore
 
@@ -167,7 +162,7 @@ def searchAlgorithm(databaseEndIndices, kmerDictionary, databaseDictionary, scor
                             maxCoordinates = [lastElement, element]
 
                 c = getMatrixFragment(scoreBoard, [lastElement, lastElement])
-                cScore = smithWaterman(c, scoringMatrix, gapScore, [trueDatabase[lastElement-1], trueQuery[lastElement-1]])
+                cScore = smithWatermanAlgorithm(c, scoringMatrix, gapScore, [trueDatabase[lastElement - 1], trueQuery[lastElement - 1]])
                 scoreBoard[lastElement][lastElement] = cScore
 
                 if (index == indexRange-1):
@@ -219,9 +214,21 @@ def searchAlgorithm(databaseEndIndices, kmerDictionary, databaseDictionary, scor
 
     return resultDictionary
 
+def displayBlastResults(sortedBlastResultsDictionary):
+    alreadyPrinted = []
+    for result in sortedBlastResultsDictionary:
+        existBoolean = False
+        object = sortedBlastResultsDictionary[result]
+        if (object['Score'] == 0):
+            continue
+        for header in alreadyPrinted:
+            if (object['Header'] == header):
+                existBoolean = True
+        if (existBoolean == True):
+            continue
+        alreadyPrinted.append(object['Header'])
 
-
-
-
-
-
+        print(object['Header'] + ' with score of:', object['Score'])
+        print('Database hit: ' + object['AlignedDatabase'])
+        print('              ' + object['Seperator'])
+        print('Query hit:    ' + object['AlignedQuery'], '\n')

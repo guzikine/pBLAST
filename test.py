@@ -3,7 +3,7 @@
     for testing the architecture of this pBLAST algorithm.
 """
 
-#import mainBlast
+#import pBlast
 #matrix = mainBlast.getMatrix()
 
 kmerDictionary = {}
@@ -119,7 +119,7 @@ def searchAlgorithm(databaseEndIndices, kmerDictionary, databaseDictionary, scor
                             maxCoordinates = [lastElement, element]
 
                 c = getMatrixFragment(scoreBoard, [lastElement, lastElement])
-                cScore = smithWaterman(c, matrix, gapScore, [trueDatabase[lastElement-1], trueQuery[lastElement-1]])
+                cScore = smithWaterman(c, scoringMatrix, gapScore, [trueDatabase[lastElement-1], trueQuery[lastElement-1]])
                 scoreBoard[lastElement][lastElement] = cScore
 
                 if (index == indexRange-1):

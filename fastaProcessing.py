@@ -18,7 +18,7 @@ import regex
 #
 # dictionaryValueStart = idDictionary["XP_009096760.1 albumin [Serinus canaria]"]["start"]
 # -> 609
-def readFasta(fastaFile, booleanDictionary = False):
+def readFastaFile(fastaFile, booleanDatabase = False):
     fileLines = fastaFile.split("\n")
     headerPattern = '(^>(.+))'
     fastaString = ''
@@ -49,7 +49,7 @@ def readFasta(fastaFile, booleanDictionary = False):
             fastaString = fastaString + line
             lengthIndex = lengthIndex + len(line)
 
-    if booleanDictionary:
+    if booleanDatabase:
         return fastaString, idDictionary, databaseEndIndices
     else:
         return fastaString

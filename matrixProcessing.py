@@ -13,7 +13,7 @@ import pandas as pd
 import regex
 
 # This function reads the scoring matrix and places it into a dataframe.
-def readScoringMatrix(scoringMatrixFile):
+def readScoringMatrixFile(scoringMatrixFile):
     fileLines = scoringMatrixFile.split("\n")
     aminoAcidPattern = '((^[A-Z]{1}).+)'
     dataframeColumnsRows = []
