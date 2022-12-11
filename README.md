@@ -2,7 +2,7 @@
 Python based pBLAST algorithm.
 
 This program written in python executes the main steps in the BLAST algorithm.
-To run this program, open the **main.py** file. The file contains 3 paramter variables 
+To run this program, open the **main.py** file. The file contains 3 parameter variables 
 that are crucial for determining how sensitive the BLAST algorithm will be.
 
 The files contained in this project, that have the **.fasta** extension are used for
