@@ -214,6 +214,8 @@ def searchDatabaseAlgorithm(proteinDatabaseEndIndices, HSSPdictionary, proteinDa
 
     return resultDictionary
 
+# This function returns a systematic represntation
+# of the results.
 def displayBlastResults(sortedBlastResultsDictionary):
     alreadyPrinted = []
     for result in sortedBlastResultsDictionary:

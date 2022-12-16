@@ -7,10 +7,6 @@ import blastFunctions
 import fastaProcessing
 import matrixProcessing
 
-# This part is required for the test.py file.
-#def getMatrix():
-    #return scoringMatrixDataFrame
-
 # Defining file and library variables for passing in
 # read files.
 scoringMatrixFile = ''
